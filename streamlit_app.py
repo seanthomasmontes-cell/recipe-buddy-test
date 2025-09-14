@@ -1,0 +1,54 @@
+import os
+import streamlit as st
+from openai import OpenAI
+
+# Use Streamlit secrets or system environment variable
+api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
+
+
+
+
+
+
+st.title("Recipe Buddy 🍳")
+st.write("Generate recipes from your pantry items!")
+
+# User inputs
+pantry = st.text_input("Pantry items (comma separated)", placeholder="e.g. pasta, tomato, garlic")
+diet = st.selectbox("Diet", ["None","Vegetarian","Vegan","Gluten-free","Dairy-free","Nut-free"])
+max_time = st.number_input("Max cook time (minutes)", min_value=5, max_value=240, value=30)
+servings = st.number_input("Servings", min_value=1, value=2)
+
+# Prompt template
+prompt = f"""
+You are a professional recipe writer. Create a clear recipe using ONLY these pantry items: {pantry}.
+Constraints: Diet = {diet}, Max time = {max_time} minutes, Servings = {servings}.
+Return: Title, Prep time, Cook time, Servings, Ingredient list with quantities, Numbered steps, One quick tip, 2 substitutions.
+Keep it simple and beginner-friendly.
+"""
+
+if st.button("Generate Recipe"):
+    if not pantry.strip():
+        st.error("Please enter some pantry items first.")
+    else:
+        with st.spinner("Generating recipe..."):
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=250
+            )
+            recipe_text = response["choices"][0]["message"]["content"]
+        st.markdown("### Your Recipe")
+        st.write(recipe_text)
+
+        # Simple PDF download
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        for line in recipe_text.split("\n"):
+            pdf.multi_cell(0, 7, line)
+        pdf_bytes = pdf.output(dest="S").encode("latin-1")
+        st.download_button("Download PDF", data=pdf_bytes, file_name="recipe.pdf", mime="application/pdf")
+
