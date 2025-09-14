@@ -1,19 +1,14 @@
 import os
 import streamlit as st
-import openai
-from fpdf import FPDF
+from openai import OpenAI
 
-import os
-import openai
-import streamlit as st
-from fpdf import FPDF
-
-# Option 1: Hardcode your key (simplest, only for testing — not safe to share)
-openai.api_key = "YOUR_OPENAI_API_KEY"
+# Use Streamlit secrets or system environment variable
+api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 
-# Option 2: Safe way using environment variable
-# openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
 
 
 st.title("Recipe Buddy 🍳")
@@ -56,7 +51,4 @@ if st.button("Generate Recipe"):
             pdf.multi_cell(0, 7, line)
         pdf_bytes = pdf.output(dest="S").encode("latin-1")
         st.download_button("Download PDF", data=pdf_bytes, file_name="recipe.pdf", mime="application/pdf")
-venv/
-__pycache__/
-*.pyc
-.env
+
